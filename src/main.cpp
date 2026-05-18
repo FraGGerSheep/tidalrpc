@@ -26,8 +26,7 @@ static const std::string REDIRECT_BASE =
 #define WM_TRAYICON  (WM_APP + 1)
 #define WM_STATUS    (WM_APP + 2)
 #define ID_TRAY_TRACK 40001
-#define ID_TRAY_OPEN  40002
-#define ID_TRAY_QUIT  40003
+#define ID_TRAY_QUIT  40002
 
 static HWND               g_hwnd = nullptr;
 static NOTIFYICONDATAW    g_nid  = {};
@@ -35,7 +34,6 @@ static std::atomic<bool>  g_running{ true };
 static std::thread        g_worker;
 static std::mutex         g_mtx;
 static std::wstring       g_status  = L"Starte ...";
-static std::wstring       g_trackId;             // numerische Track-ID oder leer
 static unsigned long long g_nonce   = 0;
 
 // --- Hilfsfunktionen ---------------------------------------------------------
@@ -196,7 +194,6 @@ static void workerLoop() {
         if (key != lastKey) {
             if (!np.valid) {
                 clearActivity(ipc);
-                { std::lock_guard<std::mutex> lk(g_mtx); g_trackId.clear(); }
                 publish(L"Tidal: nichts läuft");
             } else if (!np.playing) {
                 // Pausiert -> Presence ausblenden (wie Spotify-RPC).
@@ -206,10 +203,6 @@ static void workerLoop() {
                 tidal::Info ti = tidal::lookup(
                     wideToUtf8(np.title), wideToUtf8(np.artist));
                 setActivity(ipc, np, ti);
-                {
-                    std::lock_guard<std::mutex> lk(g_mtx);
-                    g_trackId = tidal::utf8ToWide(ti.trackId);
-                }
                 publish(np.artist + L" - " + np.title);
             }
             lastKey = key;
@@ -223,31 +216,6 @@ static void workerLoop() {
 }
 
 // --- Tray / Fenster ----------------------------------------------------------
-
-// Prueft, ob die Tidal-Desktop-App das tidal://-Protokoll registriert hat.
-static bool tidalInstalled() {
-    HKEY key;
-    if (RegOpenKeyExW(HKEY_CLASSES_ROOT, L"tidal\\shell\\open\\command",
-                      0, KEY_READ, &key) == ERROR_SUCCESS) {
-        RegCloseKey(key);
-        return true;
-    }
-    return false;
-}
-
-// Aktuellen Track oeffnen: Desktop-App wenn installiert, sonst Webplayer.
-static void openCurrentTrack() {
-    std::wstring id;
-    {
-        std::lock_guard<std::mutex> lk(g_mtx);
-        id = g_trackId;
-    }
-    if (id.empty()) return;
-    std::wstring target = tidalInstalled()
-        ? L"tidal://track/" + id
-        : L"https://tidal.com/browse/track/" + id;
-    ShellExecuteW(nullptr, L"open", target.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-}
 
 static LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
     switch (msg) {
@@ -263,31 +231,19 @@ static LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
         Shell_NotifyIconW(NIM_MODIFY, &g_nid);
         return 0;
     }
-    case WM_TRAYICON: {
-        WORD ev = LOWORD(l);
-        if (ev == WM_LBUTTONDBLCLK) {
-            // Doppelklick -> aktuellen Track oeffnen.
-            openCurrentTrack();
-        } else if (ev == WM_RBUTTONUP || ev == WM_CONTEXTMENU) {
+    case WM_TRAYICON:
+        if (LOWORD(l) == WM_RBUTTONUP || LOWORD(l) == WM_CONTEXTMENU) {
             std::wstring status;
-            bool hasTrack;
             {
                 std::lock_guard<std::mutex> lk(g_mtx);
                 status = g_status;
-                hasTrack = !g_trackId.empty();
             }
             if (status.size() > 100) status.resize(100);
-            // Label spiegelt, ob die Desktop-App installiert ist.
-            const wchar_t* openLabel = tidalInstalled()
-                ? L"In Tidal-App öffnen"
-                : L"Im Tidal-Webplayer öffnen";
             POINT pt;
             GetCursorPos(&pt);
             HMENU menu = CreatePopupMenu();
             AppendMenuW(menu, MF_STRING | MF_GRAYED, ID_TRAY_TRACK, status.c_str());
             AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
-            AppendMenuW(menu, MF_STRING | (hasTrack ? 0 : MF_GRAYED),
-                        ID_TRAY_OPEN, openLabel);
             AppendMenuW(menu, MF_STRING, ID_TRAY_QUIT, L"Beenden");
             SetForegroundWindow(h); // sonst schliesst das Menue nicht
             TrackPopupMenu(menu, TPM_RIGHTBUTTON | TPM_BOTTOMALIGN,
@@ -295,12 +251,9 @@ static LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
             DestroyMenu(menu);
         }
         return 0;
-    }
     case WM_COMMAND:
         if (LOWORD(w) == ID_TRAY_QUIT)
             DestroyWindow(h);
-        else if (LOWORD(w) == ID_TRAY_OPEN)
-            openCurrentTrack();
         return 0;
     case WM_DESTROY:
         Shell_NotifyIconW(NIM_DELETE, &g_nid);

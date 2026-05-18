@@ -30,7 +30,7 @@ cl /nologo /std:c++17 /utf-8 /EHsc /O2 /MT ^
    /DNOMINMAX /DWIN32_LEAN_AND_MEAN /DUNICODE /D_UNICODE ^
    /Isrc src\main.cpp src\tidalrpc.res ^
    /Fe:tidalrpc.exe ^
-   /link /SUBSYSTEM:WINDOWS winhttp.lib windowsapp.lib ole32.lib shell32.lib user32.lib advapi32.lib
+   /link /SUBSYSTEM:WINDOWS winhttp.lib windowsapp.lib ole32.lib shell32.lib user32.lib
 
 if errorlevel 1 (
     echo [Fehler] Kompilierung fehlgeschlagen.

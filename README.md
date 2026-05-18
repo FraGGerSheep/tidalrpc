@@ -38,10 +38,7 @@ cmake --build build --config Release
 2. Tidal starten und etwas abspielen.
 3. `tidalrpc.exe` ausführen — es erscheint ein Icon im System-Tray.
 
-- **Rechtsklick** aufs Tray-Icon → aktueller Track, *In Tidal-App öffnen*,
-  *Beenden*.
-- **Doppelklick** aufs Tray-Icon → aktuellen Track in der Tidal-Desktop-App
-  öffnen (`tidal://`-Protokoll).
+- **Rechtsklick** aufs Tray-Icon → aktueller Track + *Beenden*.
 - **Mauszeiger** über das Icon → Tooltip mit Status.
 - Der *Play on Tidal*-Button in Discord öffnet standardmäßig den Browser —
   Discord erlaubt in Buttons nur `http(s)`-Links, kein `tidal://`. Mit der

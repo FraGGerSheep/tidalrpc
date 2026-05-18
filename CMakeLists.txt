@@ -11,7 +11,7 @@ add_executable(tidalrpc WIN32 src/main.cpp src/tidalrpc.rc)
 target_include_directories(tidalrpc PRIVATE src)
 target_compile_definitions(tidalrpc PRIVATE
     NOMINMAX WIN32_LEAN_AND_MEAN UNICODE _UNICODE)
-target_link_libraries(tidalrpc PRIVATE winhttp windowsapp ole32 shell32 user32 advapi32)
+target_link_libraries(tidalrpc PRIVATE winhttp windowsapp ole32 shell32 user32)
 
 if(MSVC)
     # Statische CRT -> standalone exe, keine Redist noetig.
