@@ -20,9 +20,23 @@ if(WIN32)
     endif()
 else()
     # --- Linux/macOS: Terminal-App, Unix-Socket + libcurl ---
-    add_executable(tidalrpc src/posix/main.cpp)
+    if(APPLE)
+        enable_language(OBJCXX)
+        set(MEDIA_SRC src/posix/media_mac.mm)
+    else()
+        set(MEDIA_SRC src/posix/media_linux.cpp)
+    endif()
+
+    add_executable(tidalrpc src/posix/main.cpp ${MEDIA_SRC})
     target_compile_options(tidalrpc PRIVATE -O2 -Wall)
 
     find_package(CURL REQUIRED)
     target_link_libraries(tidalrpc PRIVATE CURL::libcurl)
+
+    if(APPLE)
+        # MediaRemote-Wrapper unter ARC kompilieren.
+        set_source_files_properties(src/posix/media_mac.mm
+            PROPERTIES COMPILE_FLAGS "-fobjc-arc")
+        target_link_libraries(tidalrpc PRIVATE "-framework Foundation")
+    endif()
 endif()

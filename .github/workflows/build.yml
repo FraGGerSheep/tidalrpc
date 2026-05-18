@@ -74,3 +74,29 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: tidalrpc-linux-x86_64
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Artefakt benennen
+        run: cp build/tidalrpc tidalrpc-macos-universal
+
+      - name: Upload (Artefakt)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tidalrpc-macos-universal
+          path: tidalrpc-macos-universal
+
+      - name: An Release haengen
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: tidalrpc-macos-universal
