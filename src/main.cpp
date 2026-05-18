@@ -197,7 +197,7 @@ static void workerLoop() {
             if (!np.valid) {
                 clearActivity(ipc);
                 { std::lock_guard<std::mutex> lk(g_mtx); g_trackId.clear(); }
-                publish(L"Tidal: nichts laeuft");
+                publish(L"Tidal: nichts läuft");
             } else if (!np.playing) {
                 // Pausiert -> Presence ausblenden (wie Spotify-RPC).
                 clearActivity(ipc);
@@ -279,8 +279,8 @@ static LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
             if (status.size() > 100) status.resize(100);
             // Label spiegelt, ob die Desktop-App installiert ist.
             const wchar_t* openLabel = tidalInstalled()
-                ? L"In Tidal-App oeffnen"
-                : L"Im Tidal-Webplayer oeffnen";
+                ? L"In Tidal-App öffnen"
+                : L"Im Tidal-Webplayer öffnen";
             POINT pt;
             GetCursorPos(&pt);
             HMENU menu = CreatePopupMenu();

@@ -17,5 +17,5 @@ if(MSVC)
     # Statische CRT -> standalone exe, keine Redist noetig.
     set_property(TARGET tidalrpc PROPERTY
         MSVC_RUNTIME_LIBRARY "MultiThreaded")
-    target_compile_options(tidalrpc PRIVATE /EHsc /O2)
+    target_compile_options(tidalrpc PRIVATE /EHsc /O2 /utf-8)
 endif()

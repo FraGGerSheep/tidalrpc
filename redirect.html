@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tidal oeffnen ...</title>
+  <title>Tidal öffnen …</title>
   <style>
     html,body{height:100%;margin:0}
     body{display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -13,8 +13,8 @@
   </style>
 </head>
 <body>
-  <h2>Oeffne Tidal ...</h2>
-  <p class="sub">Falls nichts passiert: <a id="web">im Webplayer oeffnen</a></p>
+  <h2>Öffne Tidal …</h2>
+  <p class="sub">Falls nichts passiert: <a id="web">im Webplayer öffnen</a></p>
   <script>
     // Track-ID aus ?id= lesen, Desktop-App ueber tidal://-Protokoll starten.
     var id = new URLSearchParams(location.search).get("id");
@@ -24,11 +24,11 @@
       // Versuch 1: Tidal-Desktop-App ueber tidal://-Protokoll.
       location.href = "tidal://track/" + id;
 
-      // Fallback NUR wenn keine App reagiert: dann Webplayer.
-      var fallback = setTimeout(function () { location.href = web; }, 2000);
+      // Fallback NUR wenn keine App reagiert: nach 4s Webplayer öffnen.
+      var fallback = setTimeout(function () { location.href = web; }, 4000);
 
       // Startet die Desktop-App, verliert diese Seite den Fokus ->
-      // Fallback abbrechen, damit der Browser NICHT zusaetzlich oeffnet.
+      // Fallback abbrechen, damit der Browser NICHT zusätzlich öffnet.
       var cancel = function () { clearTimeout(fallback); };
       window.addEventListener("blur", cancel);
       window.addEventListener("pagehide", cancel);

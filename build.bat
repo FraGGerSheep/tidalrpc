@@ -26,7 +26,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-cl /nologo /std:c++17 /EHsc /O2 /MT ^
+cl /nologo /std:c++17 /utf-8 /EHsc /O2 /MT ^
    /DNOMINMAX /DWIN32_LEAN_AND_MEAN /DUNICODE /D_UNICODE ^
    /Isrc src\main.cpp src\tidalrpc.res ^
    /Fe:tidalrpc.exe ^
