@@ -1,10 +1,11 @@
 name: build
 
-# Baut automatisch, sobald ein Release erstellt wird (auch als Draft), und
-# haengt die Binaries an dieses Release. Manuell ausloesbar ueber "Run workflow".
+# Baut automatisch, sobald ein Release VEROEFFENTLICHT wird, und haengt die
+# Binaries an dieses Release. GitHub startet fuer Draft-Releases keine Actions
+# - der Build laeuft erst beim Publish. Manuell ausloesbar ueber "Run workflow".
 on:
   release:
-    types: [created]
+    types: [published]
   workflow_dispatch:
 
 permissions:
