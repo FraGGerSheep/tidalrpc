@@ -1,11 +1,10 @@
 name: build
 
-# Baut bei jedem Versions-Tag (v*) und haengt die Binaries ans Release.
-# Manuell ausloesbar ueber "Run workflow".
+# Baut automatisch, sobald ein Release erstellt wird (auch als Draft), und
+# haengt die Binaries an dieses Release. Manuell ausloesbar ueber "Run workflow".
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [created]
   workflow_dispatch:
 
 permissions:
@@ -41,7 +40,7 @@ jobs:
           path: tidalrpc-windows-${{ matrix.suffix }}.exe
 
       - name: An Release haengen
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           files: tidalrpc-windows-${{ matrix.suffix }}.exe
@@ -70,7 +69,7 @@ jobs:
           path: tidalrpc-linux-x86_64
 
       - name: An Release haengen
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           files: tidalrpc-linux-x86_64
@@ -96,7 +95,7 @@ jobs:
           path: tidalrpc-macos-universal
 
       - name: An Release haengen
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           files: tidalrpc-macos-universal
