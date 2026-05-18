@@ -1,6 +1,16 @@
 @echo off
 REM Baut tidalrpc.exe (GUI / Tray, ohne Konsole) mit MSVC. Kein cmake noetig.
+REM Aufruf: build.bat [x64|x86]   (Standard: x64)
 setlocal
+
+set "ARCH=%~1"
+if /i "%ARCH%"=="x86" (
+    set "VCARCH=x86"
+) else (
+    set "ARCH=x64"
+    set "VCARCH=x64"
+)
+echo Ziel-Architektur: %ARCH%
 
 set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 if not exist "%VSWHERE%" (
@@ -13,9 +23,9 @@ if "%VSPATH%"=="" (
     exit /b 1
 )
 
-call "%VSPATH%\VC\Auxiliary\Build\vcvars64.bat" >nul
+call "%VSPATH%\VC\Auxiliary\Build\vcvarsall.bat" %VCARCH% >nul
 if errorlevel 1 (
-    echo [Fehler] vcvars64.bat fehlgeschlagen.
+    echo [Fehler] vcvarsall.bat %VCARCH% fehlgeschlagen.
     exit /b 1
 )
 
