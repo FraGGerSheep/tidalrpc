@@ -45,3 +45,32 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: tidalrpc-windows-${{ matrix.suffix }}.exe
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Abhaengigkeiten
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Artefakt benennen
+        run: cp build/tidalrpc tidalrpc-linux-x86_64
+
+      - name: Upload (Artefakt)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tidalrpc-linux-x86_64
+          path: tidalrpc-linux-x86_64
+
+      - name: An Release haengen
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: tidalrpc-linux-x86_64
