@@ -3,6 +3,7 @@
 
 # Build-Artefakte
 *.exe
+*.zip
 *.obj
 *.res
 *.pdb
