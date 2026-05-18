@@ -17,11 +17,11 @@
 // Discord Application ID.
 static const std::string APP_ID = "1506031376997027940";
 
-// Optional: URL der gehosteten redirect.html. Ist sie gesetzt, oeffnet der
+// URL der gehosteten redirect.html. Ist sie gesetzt, oeffnet der
 // "Play on Tidal"-Button per https-Redirect die Tidal-Desktop-App.
 // Leer lassen -> Button oeffnet stattdessen den Tidal-Webplayer im Browser.
-// Beispiel: "https://DEINNAME.github.io/tidalrpc/redirect.html"
-static const std::string REDIRECT_BASE = "";
+static const std::string REDIRECT_BASE =
+    "https://fraggersheep.github.io/tidalrpc/redirect.html";
 
 #define WM_TRAYICON  (WM_APP + 1)
 #define WM_STATUS    (WM_APP + 2)
