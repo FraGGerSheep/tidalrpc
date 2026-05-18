@@ -21,20 +21,15 @@
     var web = "https://tidal.com/browse/track/" + (id || "");
     document.getElementById("web").href = id ? web : "https://tidal.com";
     if (id) {
-      // Versuch 1: Tidal-Desktop-App ueber tidal://-Protokoll.
+      // Versuch: Tidal-Desktop-App über das tidal://-Protokoll starten.
       location.href = "tidal://track/" + id;
 
-      // Fallback NUR wenn keine App reagiert: nach 4s Webplayer öffnen.
-      var fallback = setTimeout(function () { location.href = web; }, 4000);
-
-      // Startet die Desktop-App, verliert diese Seite den Fokus ->
-      // Fallback abbrechen, damit der Browser NICHT zusätzlich öffnet.
-      var cancel = function () { clearTimeout(fallback); };
-      window.addEventListener("blur", cancel);
-      window.addEventListener("pagehide", cancel);
-      document.addEventListener("visibilitychange", function () {
-        if (document.hidden) cancel();
-      });
+      // Nach 4s den Webplayer öffnen — aber nur, wenn die Desktop-App NICHT
+      // übernommen hat. Hat sie es, liegt der OS-Fokus bei der App und
+      // document.hasFocus() ist false; dann wird nicht umgeleitet.
+      setTimeout(function () {
+        if (document.hasFocus()) location.href = web;
+      }, 4000);
     }
   </script>
 </body>
