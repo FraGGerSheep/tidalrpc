@@ -1,0 +1,10 @@
+# Lokale Claude-Code-Config
+.claude/
+
+# Build-Artefakte
+*.exe
+*.obj
+*.res
+*.pdb
+*.ilk
+build/
