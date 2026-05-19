@@ -26,17 +26,17 @@
     document.getElementById("web").href = id ? web : "https://tidal.com";
 
     if (id) {
-      var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      var isAndroid = /Android/i.test(navigator.userAgent);
 
       // Launch the Tidal app via the tidal:// scheme.
       location.href = deep;
 
-      // Desktop only: after 4s open the web player, but only if the desktop
-      // app did NOT take over — if it did, the OS focus moved to the app and
-      // document.hasFocus() is false, so no redirect happens.
-      // On mobile we do NOT auto-redirect to the web: loading tidal.com inside
-      // the in-app browser just bounces back to Discord.
-      if (!isMobile) {
+      // Desktop + iOS: after 4s open the web player, but only if the app did
+      // NOT take over — if it did, OS focus moved away and document.hasFocus()
+      // returns false, so no redirect happens.
+      // Android is skipped because loading tidal.com inside Discord's in-app
+      // browser just bounces back to Discord.
+      if (!isAndroid) {
         setTimeout(function () {
           if (document.hasFocus()) location.href = web;
         }, 4000);
