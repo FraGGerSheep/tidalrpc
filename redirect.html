@@ -14,39 +14,48 @@
 </head>
 <body>
   <h2>Opening Tidal …</h2>
-  <p class="sub">Nothing happening? <a id="web">Open in the web player</a></p>
+  <p class="sub">Nothing happening? <a id="open">Tap to open Tidal</a> · <a id="web">Web player</a></p>
   <script>
     // Read the track id from ?id=.
     var id = new URLSearchParams(location.search).get("id");
     // tidal://track/<id> is a valid route in the Tidal deep-link router
     // (UriMatcher addURI("track","*",0)) — identical to the https app link.
     var deep = "tidal://track/" + (id || "");
-    // https form: opens the app as a verified app link, otherwise the web player.
+    // https form: web player; also a verified Tidal app link on devices where
+    // app-link verification has fired for tidal.com.
     var web = "https://tidal.com/browse/track/" + (id || "");
-    document.getElementById("web").href = id ? web : "https://tidal.com";
+
+    var isAndroid = /Android/i.test(navigator.userAgent);
+
+    // Android intent URI. Explicit action + category so the intent matches
+    // Tidal's manifest filter even on a cold app start. NO launchFlags —
+    // Chrome Custom Tabs manages its own task stack; NEW_TASK can fight that
+    // and sometimes leaves Tidal in the background. browser_fallback_url
+    // takes over only when the app is not installed.
+    var androidIntent = "intent://track/" + (id || "") + "#Intent"
+      + ";scheme=tidal"
+      + ";package=com.aspiro.tidal"
+      + ";action=android.intent.action.VIEW"
+      + ";category=android.intent.category.BROWSABLE"
+      + ";S.browser_fallback_url=" + encodeURIComponent(web)
+      + ";end";
+
+    // Visible tap target — a real user gesture beats every browser/WebView
+    // restriction on programmatic intent:// navigation, and survives Tidal's
+    // cold-start splash more reliably than an auto-redirect.
+    document.getElementById("open").href = id ? (isAndroid ? androidIntent : deep) : web;
+    document.getElementById("web").href  = id ? web : "https://tidal.com";
 
     if (id) {
-      var isAndroid = /Android/i.test(navigator.userAgent);
-
       if (isAndroid) {
-        // Android intent URI. Explicit action + category + NEW_TASK so the
-        // deep link survives a cold start of the Tidal app — without those,
-        // a cold launch sometimes drops the track URI and Tidal just opens
-        // on its home screen. browser_fallback_url kicks in only if the app
-        // is not installed.
-        location.href = "intent://track/" + id
-          + "#Intent"
-          + ";scheme=tidal"
-          + ";package=com.aspiro.tidal"
-          + ";action=android.intent.action.VIEW"
-          + ";category=android.intent.category.BROWSABLE"
-          + ";launchFlags=0x10000000"
-          + ";S.browser_fallback_url=" + encodeURIComponent(web)
-          + ";end";
+        // Best-effort auto-launch. If the Discord/CCT WebView blocks the
+        // script-triggered intent navigation, the visible tap link above is
+        // the reliable manual fallback.
+        location.href = androidIntent;
       } else {
         // Desktop + iOS: try the custom scheme, then fall back to the web
         // player after 4s — but only if the app did NOT take over (OS focus
-        // moves away -> document.hasFocus() is false, no redirect).
+        // moves away → document.hasFocus() is false, no redirect).
         location.href = deep;
         setTimeout(function () {
           if (document.hasFocus()) location.href = web;
