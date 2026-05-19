@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Cache-Control" content="no-store">
   <title>Tidal öffnen …</title>
   <style>
     html,body{height:100%;margin:0}
@@ -38,18 +37,17 @@
     if (id) {
       var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // MOBIL: NICHT automatisch navigieren. Discords In-App-WebView kann
-      // ein per Programm gesetztes location.href auf ein Custom-Scheme nicht
-      // laden -> es schliesst den Browser und springt zurueck zu Discord,
-      // bevor der Nutzer ueberhaupt etwas sieht. Stattdessen nur die Knoepfe
-      // anzeigen: Ein echter Fingertipp auf <a href="tidal://..."> ist eine
-      // User-Geste, die der WebView ans OS durchreicht -> Tidal-App startet.
-      //
-      // DESKTOP: dort funktioniert die Programm-Navigation. tidal:// feuern
-      // und nach 4s auf den Webplayer ausweichen, falls die App nicht
-      // uebernommen hat (Fokus liegt dann noch hier).
+      // Custom-Scheme einmal feuern. Discords In-App-WebView reicht tidal://
+      // ans OS durch -> Tidal-App startet. Klappt das automatische Feuern
+      // nicht (manche WebViews blocken Programm-Navigation auf Custom-Schemes),
+      // bleiben die sichtbaren Knoepfe als manueller Fallback.
+      location.href = deep;
+
+      // Nur Desktop: nach 4s den Webplayer oeffnen, falls die Desktop-App
+      // NICHT uebernommen hat (dann liegt der Fokus noch hier).
+      // Mobil NICHT automatisch auf Web umleiten — das laedt tidal.com im
+      // WebView und springt zurueck zu Discord.
       if (!isMobile) {
-        location.href = deep;
         setTimeout(function () {
           if (document.hasFocus()) location.href = web;
         }, 4000);
