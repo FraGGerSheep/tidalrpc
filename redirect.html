@@ -16,20 +16,31 @@
   <h2>Öffne Tidal …</h2>
   <p class="sub">Falls nichts passiert: <a id="web">im Webplayer öffnen</a></p>
   <script>
-    // Track-ID aus ?id= lesen, Desktop-App ueber tidal://-Protokoll starten.
+    // Track-ID aus ?id= lesen.
     var id = new URLSearchParams(location.search).get("id");
     var web = "https://tidal.com/browse/track/" + (id || "");
     document.getElementById("web").href = id ? web : "https://tidal.com";
-    if (id) {
-      // Versuch: Tidal-Desktop-App über das tidal://-Protokoll starten.
-      location.href = "tidal://track/" + id;
 
-      // Nach 4s den Webplayer öffnen — aber nur, wenn die Desktop-App NICHT
-      // übernommen hat. Hat sie es, liegt der OS-Fokus bei der App und
-      // document.hasFocus() ist false; dann wird nicht umgeleitet.
-      setTimeout(function () {
-        if (document.hasFocus()) location.href = web;
-      }, 4000);
+    // Auf dem Handy stuerzt die Tidal-App ab, wenn man sie ueber das
+    // tidal://-Schema mit einer Track-Route startet. Mobil daher direkt den
+    // https-Universal-Link nehmen: oeffnet die App, falls installiert, sonst
+    // den Browser. Das tidal://-Schema bleibt nur fuer den Desktop.
+    var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (id) {
+      if (isMobile) {
+        location.replace(web);
+      } else {
+        // Desktop: Tidal-App über das tidal://-Protokoll starten.
+        location.href = "tidal://track/" + id;
+
+        // Nach 4s den Webplayer öffnen — aber nur, wenn die Desktop-App NICHT
+        // übernommen hat. Hat sie es, liegt der OS-Fokus bei der App und
+        // document.hasFocus() ist false; dann wird nicht umgeleitet.
+        setTimeout(function () {
+          if (document.hasFocus()) location.href = web;
+        }, 4000);
+      }
     }
   </script>
 </body>
