@@ -28,15 +28,19 @@
     if (id) {
       var isAndroid = /Android/i.test(navigator.userAgent);
 
-      // Launch the Tidal app via the tidal:// scheme.
-      location.href = deep;
-
-      // Desktop + iOS: after 4s open the web player, but only if the app did
-      // NOT take over — if it did, OS focus moved away and document.hasFocus()
-      // returns false, so no redirect happens.
-      // Android is skipped because loading tidal.com inside Discord's in-app
-      // browser just bounces back to Discord.
-      if (!isAndroid) {
+      if (isAndroid) {
+        // Android intent URI: WebViews/Chrome resolve this natively. If the
+        // Tidal app is installed -> it launches; otherwise the browser opens
+        // S.browser_fallback_url. Much more reliable than tidal:// from a
+        // WebView, which silently fails on some Android setups.
+        location.href = "intent://track/" + id
+          + "#Intent;scheme=tidal;package=com.aspiro.tidal"
+          + ";S.browser_fallback_url=" + encodeURIComponent(web) + ";end";
+      } else {
+        // Desktop + iOS: try the custom scheme, then fall back to the web
+        // player after 4s — but only if the app did NOT take over (OS focus
+        // moves away -> document.hasFocus() is false, no redirect).
+        location.href = deep;
         setTimeout(function () {
           if (document.hasFocus()) location.href = web;
         }, 4000);
