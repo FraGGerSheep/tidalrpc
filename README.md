@@ -1,4 +1,4 @@
-9# tidalrpc
+# tidalrpc
 
 Discord Rich Presence for Tidal — displays your current Tidal track (title, artist, album, album art, progress bar) in your Discord status. Standalone EXE for Windows, no runtime dependencies. Runs without a console window as an icon in the system tray.
 
