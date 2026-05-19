@@ -29,13 +29,20 @@
       var isAndroid = /Android/i.test(navigator.userAgent);
 
       if (isAndroid) {
-        // Android intent URI: WebViews/Chrome resolve this natively. If the
-        // Tidal app is installed -> it launches; otherwise the browser opens
-        // S.browser_fallback_url. Much more reliable than tidal:// from a
-        // WebView, which silently fails on some Android setups.
+        // Android intent URI. Explicit action + category + NEW_TASK so the
+        // deep link survives a cold start of the Tidal app — without those,
+        // a cold launch sometimes drops the track URI and Tidal just opens
+        // on its home screen. browser_fallback_url kicks in only if the app
+        // is not installed.
         location.href = "intent://track/" + id
-          + "#Intent;scheme=tidal;package=com.aspiro.tidal"
-          + ";S.browser_fallback_url=" + encodeURIComponent(web) + ";end";
+          + "#Intent"
+          + ";scheme=tidal"
+          + ";package=com.aspiro.tidal"
+          + ";action=android.intent.action.VIEW"
+          + ";category=android.intent.category.BROWSABLE"
+          + ";launchFlags=0x10000000"
+          + ";S.browser_fallback_url=" + encodeURIComponent(web)
+          + ";end";
       } else {
         // Desktop + iOS: try the custom scheme, then fall back to the web
         // player after 4s — but only if the app did NOT take over (OS focus
