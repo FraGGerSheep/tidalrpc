@@ -7,36 +7,47 @@
   <style>
     html,body{height:100%;margin:0}
     body{display:flex;flex-direction:column;align-items:center;justify-content:center;
-         font-family:Segoe UI,Arial,sans-serif;background:#0a0a0d;color:#fff}
-    a{color:#33d6ff}
-    .sub{color:#888;font-size:14px;margin-top:8px}
+         gap:14px;font-family:Segoe UI,Arial,sans-serif;background:#0a0a0d;color:#fff;
+         text-align:center;padding:24px;box-sizing:border-box}
+    h2{margin:0;font-weight:600}
+    a.btn{display:inline-block;padding:12px 22px;border-radius:999px;
+          text-decoration:none;font-weight:600}
+    a.app{background:#33d6ff;color:#0a0a0d}
+    a.web{background:#1c1c22;color:#33d6ff}
+    .sub{color:#888;font-size:13px;margin:0}
   </style>
 </head>
 <body>
   <h2>Öffne Tidal …</h2>
-  <p class="sub">Falls nichts passiert: <a id="web">im Webplayer öffnen</a></p>
+  <a id="app" class="btn app" href="#">In der Tidal-App öffnen</a>
+  <a id="web" class="btn web" href="#">Im Browser öffnen</a>
+  <p class="sub">Öffnet die App nicht von selbst? Tippe oben auf einen der Knöpfe.</p>
   <script>
     // Track-ID aus ?id= lesen.
-    var id = new URLSearchParams(location.search).get("id");
-    var web = "https://tidal.com/browse/track/" + (id || "");
-    document.getElementById("web").href = id ? web : "https://tidal.com";
+    var id  = new URLSearchParams(location.search).get("id");
+    // tidal://track/<id> ist laut Deeplink-Router der Tidal-App (UriMatcher,
+    // addURI("track","*",0)) eine gueltige Route — identisch zum https-App-Link.
+    var deep = "tidal://track/" + (id || "");
+    // https-Form: oeffnet als verifizierter App-Link die App, sonst den Webplayer.
+    var web  = "https://tidal.com/browse/track/" + (id || "");
 
-    // Auf dem Handy stuerzt die Tidal-App ab, wenn man sie ueber das
-    // tidal://-Schema mit einer Track-Route startet. Mobil daher direkt den
-    // https-Universal-Link nehmen: oeffnet die App, falls installiert, sonst
-    // den Browser. Das tidal://-Schema bleibt nur fuer den Desktop.
-    var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    document.getElementById("app").href = id ? deep : "tidal://home";
+    document.getElementById("web").href = id ? web  : "https://tidal.com";
 
     if (id) {
-      if (isMobile) {
-        location.replace(web);
-      } else {
-        // Desktop: Tidal-App über das tidal://-Protokoll starten.
-        location.href = "tidal://track/" + id;
+      var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-        // Nach 4s den Webplayer öffnen — aber nur, wenn die Desktop-App NICHT
-        // übernommen hat. Hat sie es, liegt der OS-Fokus bei der App und
-        // document.hasFocus() ist false; dann wird nicht umgeleitet.
+      // Custom-Scheme einmal feuern. Discords In-App-WebView reicht tidal://
+      // ans OS durch -> Tidal-App startet. Klappt das automatische Feuern
+      // nicht (manche WebViews blocken Programm-Navigation auf Custom-Schemes),
+      // bleiben die sichtbaren Knoepfe als manueller Fallback.
+      location.href = deep;
+
+      // Nur Desktop: nach 4s den Webplayer oeffnen, falls die Desktop-App
+      // NICHT uebernommen hat (dann liegt der Fokus noch hier).
+      // Mobil NICHT automatisch auf Web umleiten — das laedt tidal.com im
+      // WebView und springt zurueck zu Discord.
+      if (!isMobile) {
         setTimeout(function () {
           if (document.hasFocus()) location.href = web;
         }, 4000);
