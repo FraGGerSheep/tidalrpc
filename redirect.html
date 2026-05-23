@@ -29,14 +29,19 @@
       var isAndroid = /Android/i.test(navigator.userAgent);
 
       if (isAndroid) {
-        // Android intent URI. Explicit action + category + NEW_TASK so the
-        // deep link survives a cold start of the Tidal app — without those,
-        // a cold launch sometimes drops the track URI and Tidal just opens
-        // on its home screen. browser_fallback_url kicks in only if the app
-        // is not installed.
-        location.href = "intent://track/" + id
+        // Android intent URI routed at Tidal's verified https App Link
+        // (https://tidal.com/browse/track/<id>) instead of the tidal://
+        // custom scheme. The https track handler reloads the requested
+        // track on every open, so switching from one song to another while
+        // Tidal is already in the foreground actually loads the new track —
+        // the custom-scheme handler tended to ignore onNewIntent and keep
+        // showing the previous song. package= forces the Tidal app (no
+        // browser), explicit action + category + NEW_TASK keep the deep
+        // link alive on a cold start, and browser_fallback_url kicks in
+        // only if the app is not installed.
+        location.href = "intent://tidal.com/browse/track/" + id
           + "#Intent"
-          + ";scheme=tidal"
+          + ";scheme=https"
           + ";package=com.aspiro.tidal"
           + ";action=android.intent.action.VIEW"
           + ";category=android.intent.category.BROWSABLE"
