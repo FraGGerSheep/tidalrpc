@@ -29,18 +29,22 @@
       var isAndroid = /Android/i.test(navigator.userAgent);
 
       if (isAndroid) {
-        // Minimal Android intent routed at Tidal's verified https App Link
-        // (https://tidal.com/browse/track/<id>). No custom launchFlags: the
-        // aggressive NEW_TASK|CLEAR_TOP|RESET_TASK_IF_NEEDED combination
-        // corrupted Tidal's task stack — the app flashed a black screen,
-        // bounced back to Discord, then crashed on every reopen. Letting
-        // Tidal manage its own task (default intent VIEW handling) is the
-        // reliable path. package= forces the Tidal app instead of a browser;
-        // browser_fallback_url kicks in only if the app is not installed.
-        location.href = "intent://tidal.com/browse/track/" + id
+        // Android intent on the tidal:// custom scheme — the only form that
+        // reliably resolves to the Tidal app. The https App Link variant did
+        // not resolve to the package, and the aggressive
+        // NEW_TASK|CLEAR_TOP|RESET_TASK_IF_NEEDED flag set corrupted Tidal's
+        // task stack (black screen -> bounce back to Discord -> crash on
+        // reopen). Only FLAG_ACTIVITY_NEW_TASK (0x10000000) is set, which is
+        // required when launching from the browser context and is safe.
+        // package= forces the Tidal app; browser_fallback_url kicks in only
+        // if the app is not installed.
+        location.href = "intent://track/" + id
           + "#Intent"
-          + ";scheme=https"
+          + ";scheme=tidal"
           + ";package=com.aspiro.tidal"
+          + ";action=android.intent.action.VIEW"
+          + ";category=android.intent.category.BROWSABLE"
+          + ";launchFlags=0x10000000"
           + ";S.browser_fallback_url=" + encodeURIComponent(web)
           + ";end";
       } else {
