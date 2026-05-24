@@ -1,4 +1,3 @@
-// Linux: aktueller Tidal-Track über MPRIS, gelesen mit `playerctl`.
 #include "media.hpp"
 #include <cstdio>
 #include <cstdlib>
@@ -6,7 +5,6 @@
 
 namespace {
 
-// Führt ein Kommando aus und gibt stdout zurück (ohne Zeilenende).
 std::string run(const std::string& cmd) {
     std::string out;
     FILE* p = popen((cmd + " 2>/dev/null").c_str(), "r");
@@ -21,7 +19,7 @@ std::string run(const std::string& cmd) {
     return out;
 }
 
-} // namespace
+}
 
 namespace media {
 
@@ -29,9 +27,8 @@ NowPlaying poll() {
     NowPlaying np;
 
     std::string list = run("playerctl -l");
-    if (list.empty()) return np; // kein Player aktiv / playerctl fehlt
+    if (list.empty()) return np;
 
-    // Player suchen, dessen Track-URL oder Name auf Tidal deutet.
     std::string chosen;
     size_t start = 0;
     while (start <= list.size()) {
@@ -60,10 +57,10 @@ NowPlaying poll() {
     np.album  = run(q + "metadata xesam:album");
     np.playing = (run(q + "status") == "Playing");
 
-    std::string len = run(q + "metadata mpris:length"); // Mikrosekunden
+    std::string len = run(q + "metadata mpris:length");
     if (!len.empty()) np.lengthMs = atoll(len.c_str()) / 1000;
 
-    std::string pos = run(q + "position"); // Sekunden (Fließkomma)
+    std::string pos = run(q + "position");
     if (!pos.empty())
         np.positionMs = static_cast<long long>(atof(pos.c_str()) * 1000);
 
@@ -71,4 +68,4 @@ NowPlaying poll() {
     return np;
 }
 
-} // namespace media
+}

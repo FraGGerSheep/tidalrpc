@@ -1,4 +1,3 @@
-// Cover-Lookup: erst Tidal-Suche, dann iTunes als Fallback.
 #pragma once
 #include "http.hpp"
 #include "json_min.hpp"
@@ -32,13 +31,11 @@ inline std::string urlEncode(const std::string& s) {
 }
 
 struct Info {
-    std::string cover;    // Bild-URL fuer Discord large_image
-    std::string tidalUrl; // https-Track-Link fuer den "Play on Tidal"-Button
-    std::string trackId;  // numerische Track-ID fuer tidal://track/<id>
+    std::string cover;
+    std::string tidalUrl;
+    std::string trackId;
 };
 
-// Tidal-Suche: liefert Cover + Track-URL. Token ist der oeffentlich bekannte
-// Desktop-Token; faellt er aus, greift fuer das Cover der iTunes-Fallback.
 inline Info tidalLookup(const std::string& title, const std::string& artist) {
     Info info;
     std::string q = urlEncode(title + " " + artist);
@@ -49,18 +46,16 @@ inline Info tidalLookup(const std::string& title, const std::string& artist) {
 
     std::string cover = json::findString(body, "cover");
     if (!cover.empty()) {
-        // Tidal-Cover-UUID -> Pfad: Bindestriche werden zu Slashes.
         std::string p;
         for (char c : cover) p += (c == '-') ? '/' : c;
         info.cover = "https://resources.tidal.com/images/" + p + "/640x640.jpg";
     }
 
-    std::string url = json::findString(body, "url"); // erstes "url" = Track-Link
+    std::string url = json::findString(body, "url");
     if (!url.empty()) {
         if (url.rfind("http://", 0) == 0) url = "https://" + url.substr(7);
         info.tidalUrl = url;
 
-        // Letztes Pfadsegment = numerische Track-ID (.../track/12345).
         size_t s = url.find_last_of('/');
         if (s != std::string::npos) {
             std::string id = url.substr(s + 1);
@@ -73,7 +68,6 @@ inline Info tidalLookup(const std::string& title, const std::string& artist) {
     return info;
 }
 
-// iTunes Search API: oeffentlich, ohne Auth.
 inline std::string itunesCover(const std::string& title, const std::string& artist) {
     std::string q = urlEncode(artist + " " + title);
     std::wstring path = L"/search?term=" + utf8ToWide(q) + L"&entity=song&limit=1";
@@ -82,14 +76,11 @@ inline std::string itunesCover(const std::string& title, const std::string& arti
     std::string art = json::findString(body, "artworkUrl100");
     if (art.empty()) return "";
 
-    // 100x100 -> 600x600 hochskalieren.
     size_t pos = art.find("100x100");
     if (pos != std::string::npos) art.replace(pos, 7, "600x600");
     return art;
 }
 
-// Cover + Track-URL ermitteln. Cover faellt notfalls auf iTunes zurueck;
-// die Track-URL gibt es nur ueber Tidal.
 inline Info lookup(const std::string& title, const std::string& artist) {
     Info info = tidalLookup(title, artist);
     if (info.cover.empty())
@@ -97,4 +88,4 @@ inline Info lookup(const std::string& title, const std::string& artist) {
     return info;
 }
 
-} // namespace tidal
+}

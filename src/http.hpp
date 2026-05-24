@@ -1,4 +1,3 @@
-// HTTPS-GET ueber WinHTTP (Windows-eigen, keine externe Abhaengigkeit).
 #pragma once
 #include <windows.h>
 #include <winhttp.h>
@@ -6,7 +5,6 @@
 
 namespace http {
 
-// GET auf host+path. Gibt den Body zurueck, "" bei Fehler.
 inline std::string get(const std::wstring& host, const std::wstring& path, bool https = true) {
     std::string result;
 
@@ -47,4 +45,4 @@ inline std::string get(const std::wstring& host, const std::wstring& path, bool 
     return result;
 }
 
-} // namespace http
+}

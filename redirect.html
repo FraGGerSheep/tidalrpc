@@ -16,12 +16,8 @@
   <h2>Opening Tidal …</h2>
   <p class="sub">Nothing happening? <a id="web">Open in the web player</a></p>
   <script>
-    // Read the track id from ?id=.
     var id = new URLSearchParams(location.search).get("id");
-    // tidal://track/<id> is a valid route in the Tidal deep-link router
-    // (UriMatcher addURI("track","*",0)) — identical to the https app link.
     var deep = "tidal://track/" + (id || "");
-    // https form: opens the app as a verified app link, otherwise the web player.
     var web = "https://tidal.com/browse/track/" + (id || "");
     document.getElementById("web").href = id ? web : "https://tidal.com";
 
@@ -29,20 +25,6 @@
       var isAndroid = /Android/i.test(navigator.userAgent);
 
       if (isAndroid) {
-        // Android intent on the tidal:// custom scheme — the only form that
-        // reliably resolves to the Tidal app (verified against the APK:
-        // scheme "tidal" with no host/path filter -> singleTask
-        // LauncherActivity). flags = NEW_TASK | CLEAR_TASK (0x10008000):
-        // when Tidal was already running on another track, a plain NEW_TASK
-        // deep link bounced straight back to Discord without loading the new
-        // track — the warm path through the running task never navigated.
-        // CLEAR_TASK wipes Tidal's task and restarts LauncherActivity fresh
-        // with the new intent, so every click takes the cold-start path that
-        // already loads the requested track correctly. (NEW_TASK|CLEAR_TOP|
-        // RESET_TASK_IF_NEEDED previously crashed the singleTask launcher;
-        // RESET_TASK_IF_NEEDED was the culprit, not CLEAR_TASK.) package=
-        // forces the Tidal app; browser_fallback_url fires only if it is not
-        // installed.
         location.href = "intent://track/" + id
           + "#Intent"
           + ";scheme=tidal"
@@ -53,9 +35,6 @@
           + ";S.browser_fallback_url=" + encodeURIComponent(web)
           + ";end";
       } else {
-        // Desktop + iOS: try the custom scheme, then fall back to the web
-        // player after 4s — but only if the app did NOT take over (OS focus
-        // moves away -> document.hasFocus() is false, no redirect).
         location.href = deep;
         setTimeout(function () {
           if (document.hasFocus()) location.href = web;

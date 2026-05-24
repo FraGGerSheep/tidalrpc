@@ -1,12 +1,8 @@
-// Minimaler JSON-Helfer: nur String-Felder auslesen. Reicht fuer Cover-Lookup,
-// vermeidet eine externe JSON-Abhaengigkeit (Ziel: standalone exe).
 #pragma once
 #include <string>
 
 namespace json {
 
-// Sucht das erste Vorkommen von "key" und gibt dessen String-Wert zurueck.
-// Versteht die ueblichen JSON-Escapes; \uXXXX wird uebersprungen.
 inline std::string findString(const std::string& json, const std::string& key) {
     const std::string pat = "\"" + key + "\"";
     size_t k = json.find(pat);
@@ -36,7 +32,7 @@ inline std::string findString(const std::string& json, const std::string& key) {
                 case '"':  out += '"';  break;
                 case '\\': out += '\\'; break;
                 case '/':  out += '/';  break;
-                case 'u':  if (i + 5 < json.size()) i += 4; break; // Unicode-Escape ueberspringen
+                case 'u':  if (i + 5 < json.size()) i += 4; break;
                 default:   out += n;    break;
             }
             i += 2;
@@ -48,4 +44,4 @@ inline std::string findString(const std::string& json, const std::string& key) {
     return out;
 }
 
-} // namespace json
+}

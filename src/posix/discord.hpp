@@ -1,5 +1,3 @@
-// Discord Rich Presence über lokalen Unix-Domain-Socket (Linux/macOS).
-// Frame-Format identisch zu Windows: int32 opcode | int32 length | UTF-8 JSON.
 #pragma once
 #include <string>
 #include <vector>
@@ -19,7 +17,6 @@ enum class Result { Ok, NoPipe, Rejected };
 class IPC {
     int fd = -1;
 
-    // Versucht, einen Unix-Socket zu öffnen. Gibt fd zurück oder -1.
     static int tryOpen(const std::string& path) {
         if (path.size() >= sizeof(sockaddr_un::sun_path)) return -1;
         int s = ::socket(AF_UNIX, SOCK_STREAM, 0);
@@ -45,7 +42,6 @@ public:
     }
 
     Result connect(const std::string& clientId) {
-        // Discord legt den Socket je nach Umgebung in unterschiedliche Ordner.
         std::vector<std::string> bases;
         if (const char* x = getenv("XDG_RUNTIME_DIR")) bases.push_back(x);
         if (const char* t = getenv("TMPDIR"))          bases.push_back(t);
@@ -135,4 +131,4 @@ private:
     }
 };
 
-} // namespace discord
+}

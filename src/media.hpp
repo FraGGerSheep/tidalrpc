@@ -1,4 +1,3 @@
-// Aktueller Tidal-Track ueber System Media Transport Controls (C++/WinRT).
 #pragma once
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -15,11 +14,10 @@ struct NowPlaying {
     bool valid   = false;
     bool playing = false;
     std::wstring title, artist, album;
-    long long startMs = 0; // Unix-ms: Track-Anfang
-    long long endMs   = 0; // Unix-ms: Track-Ende
+    long long startMs = 0;
+    long long endMs   = 0;
 };
 
-// Liest die SMTC-Sitzung, deren App-ID "tidal" enthaelt.
 inline NowPlaying poll() {
     NowPlaying np;
     try {
@@ -35,7 +33,7 @@ inline NowPlaying poll() {
                 break;
             }
         }
-        if (!session) return np; // Tidal laeuft nicht / spielt nichts
+        if (!session) return np;
 
         auto props = session.TryGetMediaPropertiesAsync().get();
         np.title  = std::wstring(props.Title().c_str(),      props.Title().size());
@@ -62,4 +60,4 @@ inline NowPlaying poll() {
     return np;
 }
 
-} // namespace media
+}

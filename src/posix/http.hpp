@@ -1,4 +1,3 @@
-// HTTPS-GET über libcurl (Linux/macOS).
 #pragma once
 #include <string>
 #include <curl/curl.h>
@@ -10,7 +9,6 @@ inline size_t writeCb(char* ptr, size_t size, size_t nmemb, void* userdata) {
     return size * nmemb;
 }
 
-// GET auf eine vollständige URL. Gibt den Body zurück, "" bei Fehler.
 inline std::string get(const std::string& url) {
     std::string body;
     CURL* c = curl_easy_init();
@@ -27,4 +25,4 @@ inline std::string get(const std::string& url) {
     return body;
 }
 
-} // namespace http
+}

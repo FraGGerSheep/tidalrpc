@@ -1,6 +1,3 @@
-// macOS: aktueller Track über das private MediaRemote-Framework.
-// Hinweis: Apple hat den Zugriff ab macOS Sonoma 14.4 eingeschränkt — fuer
-// unsignierte Apps kann hier nichts zurueckkommen. Dann bleibt valid=false.
 #include "media.hpp"
 #import <Foundation/Foundation.h>
 #include <dlfcn.h>
@@ -30,7 +27,7 @@ double cfNum(CFNumberRef n) {
     return d;
 }
 
-} // namespace
+}
 
 namespace media {
 
@@ -51,8 +48,6 @@ NowPlaying poll() {
     dispatch_queue_t q =
         dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0);
 
-    // MediaRemote ruft den Handler garantiert genau einmal auf -> Semaphore
-    // ohne Timeout ist sicher, kein Use-after-free der __block-Variablen.
     __block NowPlaying result;
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
     getInfo(q, ^(CFDictionaryRef info) {
@@ -91,4 +86,4 @@ NowPlaying poll() {
     return result;
 }
 
-} // namespace media
+}

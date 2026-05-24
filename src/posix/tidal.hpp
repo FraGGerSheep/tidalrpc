@@ -1,4 +1,3 @@
-// Cover-Lookup + Track-URL: erst Tidal-Suche, dann iTunes-Fallback.
 #pragma once
 #include "../json_min.hpp"
 #include "http.hpp"
@@ -8,9 +7,9 @@
 namespace tidal {
 
 struct Info {
-    std::string cover;    // Bild-URL für Discord large_image
-    std::string tidalUrl; // https-Track-Link
-    std::string trackId;  // numerische Track-ID
+    std::string cover;
+    std::string tidalUrl;
+    std::string trackId;
 };
 
 inline std::string urlEncode(const std::string& s) {
@@ -57,7 +56,6 @@ inline Info lookup(const std::string& title, const std::string& artist) {
         }
     }
 
-    // iTunes nur als Cover-Fallback.
     if (info.cover.empty()) {
         std::string ib = http::get(
             "https://itunes.apple.com/search?term="
@@ -72,4 +70,4 @@ inline Info lookup(const std::string& title, const std::string& artist) {
     return info;
 }
 
-} // namespace tidal
+}

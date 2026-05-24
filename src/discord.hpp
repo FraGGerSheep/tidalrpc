@@ -1,5 +1,3 @@
-// Discord Rich Presence ueber lokale IPC-Named-Pipe.
-// Frame-Format: int32 opcode (LE) | int32 length (LE) | UTF-8 JSON.
 #pragma once
 #include <windows.h>
 #include <string>
@@ -16,7 +14,7 @@ class IPC {
     HANDLE pipe = INVALID_HANDLE_VALUE;
 
 public:
-    std::string lastError; // gefuellt bei fehlgeschlagenem connect()
+    std::string lastError;
 
     ~IPC() { close(); }
 
@@ -29,7 +27,6 @@ public:
         }
     }
 
-    // Verbindet mit dem laufenden Discord-Desktop-Client und macht den Handshake.
     Result connect(const std::string& clientId) {
         bool pipeBusy = false;
         for (int i = 0; i < 10; ++i) {
@@ -66,7 +63,6 @@ public:
             close();
             return Result::Rejected;
         }
-        // Erfolg = READY-Dispatch. Sonst meist falsche/unbekannte Client-ID.
         if (resp.find("READY") == std::string::npos
             && resp.find("DISPATCH") == std::string::npos) {
             lastError = "Discord lehnt die App-ID ab: " + resp.substr(0, 180);
@@ -91,7 +87,6 @@ public:
             && written == frame.size();
     }
 
-    // Liest einen kompletten Frame; gibt den JSON-Body zurueck.
     bool readFrame(std::string& out) {
         if (!connected()) return false;
         char hdr[8];
@@ -104,7 +99,6 @@ public:
         return len == 0 || readExact(&out[0], len);
     }
 
-    // Wartende Antwort-Frames leeren, damit der Pipe-Puffer nicht volllaeuft.
     void drain() {
         if (!connected()) return;
         DWORD avail = 0;
@@ -115,7 +109,6 @@ public:
     }
 
 private:
-    // ReadFile auf einer Byte-Pipe kann teilweise lesen -> bis voll lesen.
     bool readExact(void* buf, int n) {
         char* p = static_cast<char*>(buf);
         int total = 0;
@@ -129,4 +122,4 @@ private:
     }
 };
 
-} // namespace discord
+}

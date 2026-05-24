@@ -1,5 +1,3 @@
-// tidalrpc - Discord Rich Presence fuer Tidal.
-// GUI-App ohne Konsole: laeuft als Icon im System-Tray.
 #include <windows.h>
 #include <shellapi.h>
 #include "resource.h"
@@ -14,12 +12,8 @@
 #include <cstdio>
 #include <cwchar>
 
-// Discord Application ID.
 static const std::string APP_ID = "1506031376997027940";
 
-// URL der gehosteten redirect.html. Ist sie gesetzt, oeffnet der
-// "Play on Tidal"-Button per https-Redirect die Tidal-Desktop-App.
-// Leer lassen -> Button oeffnet stattdessen den Tidal-Webplayer im Browser.
 static const std::string REDIRECT_BASE =
     "https://fraggersheep.github.io/tidalrpc/redirect.html";
 
@@ -36,7 +30,6 @@ static std::mutex         g_mtx;
 static std::wstring       g_status  = L"Starte ...";
 static unsigned long long g_nonce   = 0;
 
-// --- Hilfsfunktionen ---------------------------------------------------------
 
 static std::string wideToUtf8(const std::wstring& w) {
     if (w.empty()) return "";
@@ -73,14 +66,12 @@ static std::string jsonEscape(const std::string& s) {
     return o;
 }
 
-// Auf Discords Feldgrenzen kappen (2..128 Zeichen).
 static std::wstring clip(std::wstring s) {
     if (s.size() > 120) s.resize(120);
     while (s.size() < 2) s += L' ';
     return s;
 }
 
-// --- Presence ----------------------------------------------------------------
 
 static void setActivity(discord::IPC& ipc, const media::NowPlaying& np,
                         const tidal::Info& ti) {
@@ -91,7 +82,6 @@ static void setActivity(discord::IPC& ipc, const media::NowPlaying& np,
     std::string artist = jsonEscape(wideToUtf8(clip(artistW)));
     std::string album  = jsonEscape(wideToUtf8(clip(np.album)));
 
-    // name -> Anzeige "Listening to <name>" (neuere Discord-Clients).
     std::string a = "{\"name\":\"Tidal\",\"type\":2,\"details\":\"" + title
                   + "\",\"state\":\"" + artist + "\"";
 
@@ -110,8 +100,6 @@ static void setActivity(discord::IPC& ipc, const media::NowPlaying& np,
         a += ",\"timestamps\":{\"start\":" + std::to_string(np.startMs)
            + ",\"end\":" + std::to_string(np.endMs) + "}";
 
-    // Button-Ziel: Redirect-Seite (oeffnet Desktop-App) bevorzugen,
-    // sonst direkter Tidal-Webplayer-Link.
     std::string buttonUrl;
     if (!ti.trackId.empty()) {
         buttonUrl = REDIRECT_BASE.empty()
@@ -147,9 +135,7 @@ static void clearActivity(discord::IPC& ipc) {
         ipc.close();
 }
 
-// --- Worker-Thread -----------------------------------------------------------
 
-// Setzt den Tray-Tooltip.
 static void publish(const std::wstring& status) {
     {
         std::lock_guard<std::mutex> lk(g_mtx);
@@ -165,7 +151,7 @@ static bool interruptibleSleep(int ms) {
 }
 
 static void workerLoop() {
-    winrt::init_apartment(); // SMTC/WinRT in diesem Thread initialisieren
+    winrt::init_apartment();
     discord::IPC ipc;
     std::wstring lastKey;
     bool wasConnected = false;
@@ -196,7 +182,6 @@ static void workerLoop() {
                 clearActivity(ipc);
                 publish(L"Tidal: nichts läuft");
             } else if (!np.playing) {
-                // Pausiert -> Presence ausblenden (wie Spotify-RPC).
                 clearActivity(ipc);
                 publish(np.artist + L" - " + np.title + L"  (pausiert)");
             } else {
@@ -215,7 +200,6 @@ static void workerLoop() {
     ipc.close();
 }
 
-// --- Tray / Fenster ----------------------------------------------------------
 
 static LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
     switch (msg) {
@@ -245,7 +229,7 @@ static LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
             AppendMenuW(menu, MF_STRING | MF_GRAYED, ID_TRAY_TRACK, status.c_str());
             AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
             AppendMenuW(menu, MF_STRING, ID_TRAY_QUIT, L"Beenden");
-            SetForegroundWindow(h); // sonst schliesst das Menue nicht
+            SetForegroundWindow(h);
             TrackPopupMenu(menu, TPM_RIGHTBUTTON | TPM_BOTTOMALIGN,
                            pt.x, pt.y, 0, h, nullptr);
             DestroyMenu(menu);
@@ -264,7 +248,6 @@ static LRESULT CALLBACK WndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
 }
 
 int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int) {
-    // Nur eine Instanz zulassen.
     HANDLE single = CreateMutexW(nullptr, FALSE, L"tidalrpc_singleton");
     if (single && GetLastError() == ERROR_ALREADY_EXISTS)
         return 0;
@@ -275,7 +258,6 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int) {
     wc.lpszClassName = L"tidalrpcWndClass";
     RegisterClassW(&wc);
 
-    // Verstecktes Fenster (nie ShowWindow) - traegt das Tray-Icon.
     g_hwnd = CreateWindowExW(0, wc.lpszClassName, L"tidalrpc",
         WS_OVERLAPPED, 0, 0, 0, 0, nullptr, nullptr, hInst, nullptr);
 

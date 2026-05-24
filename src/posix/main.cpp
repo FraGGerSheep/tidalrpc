@@ -1,4 +1,3 @@
-// tidalrpc - Discord Rich Presence für Tidal (Linux/macOS, Terminal).
 #include "discord.hpp"
 #include "http.hpp"
 #include "tidal.hpp"
@@ -12,7 +11,6 @@
 
 static const std::string APP_ID = "1506031376997027940";
 
-// URL der gehosteten redirect.html für den "Play on Tidal"-Button.
 static const std::string REDIRECT_BASE =
     "https://fraggersheep.github.io/tidalrpc/redirect.html";
 
@@ -21,7 +19,6 @@ static void onSignal(int) { g_run = 0; }
 
 static unsigned long long g_nonce = 0;
 
-// --- Hilfsfunktionen ---------------------------------------------------------
 
 static std::string jsonEscape(const std::string& s) {
     std::string o;
@@ -48,7 +45,6 @@ static std::string jsonEscape(const std::string& s) {
     return o;
 }
 
-// Auf Discords Feldgrenzen kappen, ohne ein UTF-8-Zeichen zu zerschneiden.
 static std::string clip(std::string s) {
     if (s.size() > 120) {
         s.resize(120);
@@ -67,7 +63,6 @@ static long long nowMs() {
     return static_cast<long long>(ts.tv_sec) * 1000 + ts.tv_nsec / 1000000;
 }
 
-// --- Presence ----------------------------------------------------------------
 
 static void setActivity(discord::IPC& ipc, const media::NowPlaying& np,
                         const tidal::Info& ti) {
@@ -126,14 +121,12 @@ static void clearActivity(discord::IPC& ipc) {
     ipc.send(discord::OP_FRAME, payload);
 }
 
-// Schlaf in 100-ms-Schritten, abbrechbar über das Signal.
 static bool nap(int ms) {
     for (int i = 0; i < ms && g_run; i += 100)
         usleep(100000);
     return g_run;
 }
 
-// --- main --------------------------------------------------------------------
 
 int main() {
     signal(SIGINT, onSignal);
