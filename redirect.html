@@ -30,21 +30,26 @@
 
       if (isAndroid) {
         // Android intent on the tidal:// custom scheme — the only form that
-        // reliably resolves to the Tidal app. The https App Link variant did
-        // not resolve to the package, and the aggressive
-        // NEW_TASK|CLEAR_TOP|RESET_TASK_IF_NEEDED flag set corrupted Tidal's
-        // task stack (black screen -> bounce back to Discord -> crash on
-        // reopen). Only FLAG_ACTIVITY_NEW_TASK (0x10000000) is set, which is
-        // required when launching from the browser context and is safe.
-        // package= forces the Tidal app; browser_fallback_url kicks in only
-        // if the app is not installed.
+        // reliably resolves to the Tidal app (verified against the APK:
+        // scheme "tidal" with no host/path filter -> singleTask
+        // LauncherActivity). flags = NEW_TASK | CLEAR_TASK (0x10008000):
+        // when Tidal was already running on another track, a plain NEW_TASK
+        // deep link bounced straight back to Discord without loading the new
+        // track — the warm path through the running task never navigated.
+        // CLEAR_TASK wipes Tidal's task and restarts LauncherActivity fresh
+        // with the new intent, so every click takes the cold-start path that
+        // already loads the requested track correctly. (NEW_TASK|CLEAR_TOP|
+        // RESET_TASK_IF_NEEDED previously crashed the singleTask launcher;
+        // RESET_TASK_IF_NEEDED was the culprit, not CLEAR_TASK.) package=
+        // forces the Tidal app; browser_fallback_url fires only if it is not
+        // installed.
         location.href = "intent://track/" + id
           + "#Intent"
           + ";scheme=tidal"
           + ";package=com.aspiro.tidal"
           + ";action=android.intent.action.VIEW"
           + ";category=android.intent.category.BROWSABLE"
-          + ";launchFlags=0x10000000"
+          + ";launchFlags=0x10008000"
           + ";S.browser_fallback_url=" + encodeURIComponent(web)
           + ";end";
       } else {
