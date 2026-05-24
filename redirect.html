@@ -7,35 +7,41 @@
   <style>
     html,body{height:100%;margin:0}
     body{display:flex;flex-direction:column;align-items:center;justify-content:center;
-         font-family:Segoe UI,Arial,sans-serif;background:#0a0a0d;color:#fff}
-    a{color:#33d6ff}
-    .sub{color:#888;font-size:14px;margin-top:8px}
+         font-family:Segoe UI,Arial,sans-serif;background:#0a0a0d;color:#fff;text-align:center;padding:0 24px}
+    h2{font-weight:600}
+    a.btn{display:block;width:100%;max-width:360px;box-sizing:border-box;margin-top:24px;
+          padding:18px 24px;border-radius:28px;background:#33d6ff;color:#000;
+          font-size:19px;font-weight:700;text-decoration:none}
+    .sub{color:#888;font-size:14px;margin-top:20px}
+    .sub a{color:#33d6ff}
   </style>
 </head>
 <body>
   <h2>Opening Tidal …</h2>
+  <a id="open" class="btn">Open Tidal</a>
   <p class="sub">Nothing happening? <a id="web">Open in the web player</a></p>
   <script>
     var id = new URLSearchParams(location.search).get("id");
     var deep = "tidal://track/" + (id || "");
     var web = "https://tidal.com/browse/track/" + (id || "");
+    var isAndroid = /Android/i.test(navigator.userAgent);
+    var androidIntent = "intent://track/" + (id || "")
+      + "#Intent"
+      + ";scheme=tidal"
+      + ";package=com.aspiro.tidal"
+      + ";action=android.intent.action.VIEW"
+      + ";category=android.intent.category.BROWSABLE"
+      + ";launchFlags=0x10008000"
+      + ";S.browser_fallback_url=" + encodeURIComponent(web)
+      + ";end";
+    var appUrl = isAndroid ? androidIntent : deep;
+
     document.getElementById("web").href = id ? web : "https://tidal.com";
+    document.getElementById("open").href = id ? appUrl : (isAndroid ? "https://tidal.com" : web);
 
     if (id) {
-      var isAndroid = /Android/i.test(navigator.userAgent);
-
-      if (isAndroid) {
-        location.href = "intent://track/" + id
-          + "#Intent"
-          + ";scheme=tidal"
-          + ";package=com.aspiro.tidal"
-          + ";action=android.intent.action.VIEW"
-          + ";category=android.intent.category.BROWSABLE"
-          + ";launchFlags=0x10008000"
-          + ";S.browser_fallback_url=" + encodeURIComponent(web)
-          + ";end";
-      } else {
-        location.href = deep;
+      location.href = appUrl;
+      if (!isAndroid) {
         setTimeout(function () {
           if (document.hasFocus()) location.href = web;
         }, 4000);
