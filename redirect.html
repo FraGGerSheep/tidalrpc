@@ -39,13 +39,11 @@
     document.getElementById("web").href = id ? web : "https://tidal.com";
     document.getElementById("open").href = id ? appUrl : (isAndroid ? "https://tidal.com" : web);
 
-    if (id) {
+    if (id && !isAndroid) {
       location.href = appUrl;
-      if (!isAndroid) {
-        setTimeout(function () {
-          if (document.hasFocus()) location.href = web;
-        }, 4000);
-      }
+      setTimeout(function () {
+        if (document.hasFocus()) location.href = web;
+      }, 4000);
     }
   </script>
 </body>
