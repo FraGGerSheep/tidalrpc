@@ -31,7 +31,7 @@
       + ";package=com.aspiro.tidal"
       + ";action=android.intent.action.VIEW"
       + ";category=android.intent.category.BROWSABLE"
-      + ";launchFlags=0x10008000"
+      + ";launchFlags=0x10000000"
       + ";S.browser_fallback_url=" + encodeURIComponent(web)
       + ";end";
     var appUrl = isAndroid ? androidIntent : deep;
@@ -39,11 +39,19 @@
     document.getElementById("web").href = id ? web : "https://tidal.com";
     document.getElementById("open").href = id ? appUrl : (isAndroid ? "https://tidal.com" : web);
 
-    if (id && !isAndroid) {
-      location.href = appUrl;
-      setTimeout(function () {
-        if (document.hasFocus()) location.href = web;
-      }, 4000);
+    if (id) {
+      if (isAndroid) {
+        var ifr = document.createElement("iframe");
+        ifr.style.display = "none";
+        ifr.src = appUrl;
+        document.body.appendChild(ifr);
+        setTimeout(function () { try { location.href = appUrl; } catch (e) {} }, 50);
+      } else {
+        location.href = appUrl;
+        setTimeout(function () {
+          if (document.hasFocus()) location.href = web;
+        }, 4000);
+      }
     }
   </script>
 </body>
