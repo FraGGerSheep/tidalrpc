@@ -45,15 +45,10 @@
 
     if (id) {
       if (isAndroid) {
-        if (album) {
-          fireIframe(buildIntent("album/" + album));
-          setTimeout(function () { fireIframe(buildIntent("browse/track/" + id)); }, 1400);
-          setTimeout(function () { try { location.href = buildIntent("browse/track/" + id); } catch (e) {} }, 2000);
-        } else {
-          var androidIntent = buildIntent("play/track/" + id);
-          fireIframe(androidIntent);
-          setTimeout(function () { try { location.href = androidIntent; } catch (e) {} }, 50);
-        }
+        var androidIntent = album
+          ? buildIntent("album/" + album)
+          : buildIntent("play/track/" + id);
+        location.href = androidIntent;
       } else {
         location.href = deep;
         setTimeout(function () {
