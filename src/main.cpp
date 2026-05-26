@@ -102,9 +102,12 @@ static void setActivity(discord::IPC& ipc, const media::NowPlaying& np,
 
     std::string buttonUrl;
     if (!ti.trackId.empty()) {
-        buttonUrl = REDIRECT_BASE.empty()
-            ? "https://tidal.com/browse/track/" + ti.trackId
-            : REDIRECT_BASE + "?id=" + ti.trackId;
+        if (REDIRECT_BASE.empty()) {
+            buttonUrl = "https://tidal.com/browse/track/" + ti.trackId;
+        } else {
+            buttonUrl = REDIRECT_BASE + "?id=" + ti.trackId;
+            if (!ti.albumId.empty()) buttonUrl += "&album=" + ti.albumId;
+        }
     } else if (!ti.tidalUrl.empty()) {
         buttonUrl = ti.tidalUrl;
     }

@@ -16,11 +16,14 @@
   <h2>Opening Tidal …</h2>
   <p class="sub">Nothing happening? <a id="web">Open in the web player</a></p>
   <script>
-    var id = new URLSearchParams(location.search).get("id");
+    var params = new URLSearchParams(location.search);
+    var id = params.get("id");
+    var album = params.get("album");
     var deep = "tidal://track/" + (id || "");
     var web = "https://tidal.com/browse/track/" + (id || "");
     var isAndroid = /Android/i.test(navigator.userAgent);
-    var androidIntent = "intent://play/track/" + (id || "")
+    var androidPath = album ? "album/" + album : "play/track/" + (id || "");
+    var androidIntent = "intent://" + androidPath
       + "#Intent"
       + ";scheme=tidal"
       + ";package=com.aspiro.tidal"

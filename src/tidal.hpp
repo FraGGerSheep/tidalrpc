@@ -34,7 +34,22 @@ struct Info {
     std::string cover;
     std::string tidalUrl;
     std::string trackId;
+    std::string albumId;
 };
+
+inline std::string findAlbumId(const std::string& body) {
+    size_t a = body.find("\"album\"");
+    if (a == std::string::npos) return "";
+    size_t b = body.find('{', a);
+    if (b == std::string::npos) return "";
+    size_t idKey = body.find("\"id\"", b);
+    if (idKey == std::string::npos) return "";
+    size_t i = idKey + 4;
+    while (i < body.size() && (body[i] == ' ' || body[i] == ':')) ++i;
+    std::string out;
+    while (i < body.size() && std::isdigit((unsigned char)body[i])) out += body[i++];
+    return out;
+}
 
 inline Info tidalLookup(const std::string& title, const std::string& artist) {
     Info info;
@@ -65,6 +80,8 @@ inline Info tidalLookup(const std::string& title, const std::string& artist) {
             if (digits) info.trackId = id;
         }
     }
+
+    info.albumId = findAlbumId(body);
     return info;
 }
 
