@@ -22,29 +22,40 @@
     var deep = "tidal://track/" + (id || "");
     var web = "https://tidal.com/browse/track/" + (id || "");
     var isAndroid = /Android/i.test(navigator.userAgent);
-    var androidPath = album ? "album/" + album : "play/track/" + (id || "");
-    var androidIntent = "intent://" + androidPath
-      + "#Intent"
-      + ";scheme=tidal"
-      + ";package=com.aspiro.tidal"
-      + ";action=android.intent.action.VIEW"
-      + ";category=android.intent.category.BROWSABLE"
-      + ";launchFlags=0x10000000"
-      + ";S.browser_fallback_url=" + encodeURIComponent(web)
-      + ";end";
-    var appUrl = isAndroid ? androidIntent : deep;
+
+    function buildIntent(path) {
+      return "intent://" + path
+        + "#Intent"
+        + ";scheme=tidal"
+        + ";package=com.aspiro.tidal"
+        + ";action=android.intent.action.VIEW"
+        + ";category=android.intent.category.BROWSABLE"
+        + ";launchFlags=0x10000000"
+        + ";S.browser_fallback_url=" + encodeURIComponent(web)
+        + ";end";
+    }
+    function fireIframe(url) {
+      var f = document.createElement("iframe");
+      f.style.display = "none";
+      f.src = url;
+      document.body.appendChild(f);
+    }
 
     document.getElementById("web").href = id ? web : "https://tidal.com";
 
     if (id) {
       if (isAndroid) {
-        var ifr = document.createElement("iframe");
-        ifr.style.display = "none";
-        ifr.src = appUrl;
-        document.body.appendChild(ifr);
-        setTimeout(function () { try { location.href = appUrl; } catch (e) {} }, 50);
+        if (album) {
+          fireIframe(buildIntent("album/" + album));
+          setTimeout(function () { fireIframe(buildIntent("browse/track/" + id)); }, 1400);
+          setTimeout(function () { try { location.href = buildIntent("browse/track/" + id); } catch (e) {} }, 2000);
+        } else {
+          var androidIntent = buildIntent("play/track/" + id);
+          fireIframe(androidIntent);
+          setTimeout(function () { try { location.href = androidIntent; } catch (e) {} }, 50);
+        }
       } else {
-        location.href = appUrl;
+        location.href = deep;
         setTimeout(function () {
           if (document.hasFocus()) location.href = web;
         }, 4000);
